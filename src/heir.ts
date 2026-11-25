@@ -31,7 +31,7 @@ async function execute(a: Action): Promise<{ output: string; status?: number }> 
   return { output: "" };
 }
 
-export async function run(task: string, maxSteps = 8): Promise<{ blocks: string[]; final: string | null }> {
+export async function run(task: string, maxSteps = 8, save?: string): Promise<{ blocks: string[]; final: string | null }> {
   const gates = await loadGates();
   const t: Transcript = { steps: [], sentBodies: new Set() };
   const msgs = [{ role: "system", content: SYSTEM }, { role: "user", content: task }];
@@ -50,7 +50,11 @@ export async function run(task: string, maxSteps = 8): Promise<{ blocks: string[
       msgs.push({ role: "user", content: `BLOCKED by gate ${b.gate.id}: ${b.reason}` });
       continue;
     }
-    if (a.kind === "claim") { console.log(`${c.green}DONE${c.off} ${a.text}`); return { blocks, final: a.text }; }
+    if (a.kind === "claim") {
+      console.log(`${c.green}DONE${c.off} ${a.text}`);
+      if (save) await Bun.write(save, JSON.stringify({ task, model: MODEL, at: new Date().toISOString(), steps: t.steps, final: a }, null, 2));
+      return { blocks, final: a.text };
+    }
     if (a.kind === "http" && a.method.toUpperCase() === "POST") t.sentBodies.add(hashBody(a.path, a.body));
     const r = await execute(a);
     t.steps.push({ action: a, output: r.output, status: r.status });
@@ -63,12 +67,19 @@ export async function run(task: string, maxSteps = 8): Promise<{ blocks: string[
 
 if (import.meta.main) {
   const [cmd, ...rest] = process.argv.slice(2);
-  if (cmd === "run") await run(rest.join(" "));
+  if (cmd === "run") {
+    const i = rest.indexOf("--save");
+    const save = i >= 0 ? rest.splice(i, 2)[1] : undefined;
+    await run(rest.join(" "), 8, save);
+  } else if (cmd === "learn" || cmd === "activate" || cmd === "upstream") {
+    const L = await import("./learn.ts");
+    await (L as any)[cmd](...rest);
+  }
   else if (cmd === "gates") {
     const g = await loadGates();
     for (const x of g) console.log(`${x.date}  ${x.inherited ? "inherited" : "LEARNED  "}  ${x.id}  ${c.dim}${x.incident}${c.off}`);
     const n = g.filter((x) => x.inherited).length;
     console.log(`\n${n} inherited -> ${g.length} active`);
-  } else if (cmd === "ledger") console.log(`Spent: $${spentUsd().toFixed(4)} / $${CAP_USD.toFixed(2)} client-side cap (model ${MODEL})`);
-  else console.log("usage: heir run <task> | heir gates | heir ledger");
+  } else if (cmd === "ledger") console.log(`Spent: $${spentUsd().toFixed(4)} / $${CAP_USD.toFixed(2)} client-side circuit breaker (all models; rows in ledger.jsonl)`);
+  else console.log("usage: heir run <task> [--save t.json] | heir gates | heir ledger | heir learn <replay.json> <correction.txt> <control.json>... | heir activate <id> | heir upstream <id>");
 }

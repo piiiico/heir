@@ -1,6 +1,8 @@
 // Each inherited gate: the parent's original failing input must be BLOCKED, the corrected
 // input must PASS. Both arms, or the gate is untested.
 import { test, expect } from "bun:test";
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { loadGates } from "../src/gates.ts";
 import { hashBody } from "./08-duplicate-outbound.ts";
 import type { Action, Transcript } from "../src/types.ts";
@@ -10,9 +12,11 @@ const g = (id: string) => gates.find((x) => x.id.startsWith(id))!;
 const T = (steps: Transcript["steps"] = [], sent: string[] = []): Transcript => ({ steps, sentBodies: new Set(sent) });
 const blocked = (id: string, a: Action, t = T()) => g(id).check(a, t) !== null;
 
-test("9 inherited gates load, each with a date and an incident", () => {
+test("every gate file in gates/ loads as inherited, each with a date and an incident", () => {
   const inh = gates.filter((x) => x.inherited);
-  expect(inh.length).toBe(9);
+  const files = readdirSync(join(import.meta.dir)).filter((f) => /^\d\d-.*\.ts$/.test(f) && !f.endsWith(".test.ts"));
+  expect(files.length).toBeGreaterThanOrEqual(9);
+  expect(inh.length).toBe(files.length);
   for (const x of inh) { expect(x.date).toMatch(/^2026-\d\d-\d\d$/); expect(x.incident.length).toBeGreaterThan(20); }
 });
 
