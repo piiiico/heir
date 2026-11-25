@@ -80,6 +80,25 @@ if (import.meta.main) {
     for (const x of g) console.log(`${x.date}  ${x.inherited ? "inherited" : "LEARNED  "}  ${x.id}  ${c.dim}${x.incident}${c.off}`);
     const n = g.filter((x) => x.inherited).length;
     console.log(`\n${n} inherited -> ${g.length} active`);
+  } else if (cmd === "replay") {
+    // Re-run a SAVED transcript's steps (printed, not re-executed) and its final claim through today's gates.
+    const r = JSON.parse(await Bun.file(rest[0]).text());
+    const gates = await loadGates();
+    console.log(`${c.yel}REPLAY${c.off} of a real run by ${r.model} at ${r.at} (${rest[0]}); outputs as recorded, nothing re-executed`);
+    for (const s of r.steps) console.log(`${c.dim}heir>${c.off} ${JSON.stringify(s.action)}\n${c.dim}${s.output.split("\n").filter((l: string) => l.trim()).slice(-2).join("\n")}${c.off}`);
+    console.log(`${c.dim}heir>${c.off} ${JSON.stringify(r.final)}`);
+    const inh = gates.filter((x) => x.inherited), T = () => ({ steps: r.steps, sentBodies: new Set<string>() });
+    const b0 = firstBlock(inh, r.final, T());
+    console.log(b0 ? `${c.red}BLOCKED${c.off} by inherited gate ${b0.gate.id}` : `${c.yel}PASSED${c.off} the ${inh.length} inherited gates (this is the miss)`);
+    const b = firstBlock(gates, r.final, T());
+    if (b) console.log(`${c.red}BLOCKED${c.off} [gate ${b.gate.id}, ${b.gate.inherited ? "inherited" : "learned " + b.gate.date}] ${b.reason}`);
+    else console.log(`${c.green}PASSED${c.off} all ${gates.length} gates: "${r.final.text}"`);
+  } else if (cmd === "finale") {
+    const g = await loadGates();
+    const creds = (await Bun.file(rest[0] ?? "proof/zero-creds.out").text()).match(/Secrets on VM: (\d+)/)?.[1] ?? "unmeasured";
+    console.log(`Secrets on VM:  ${creds} (all calls via Fly connectors)`);
+    console.log(`Gates:          ${g.filter((x) => x.inherited).length} inherited -> ${g.length} active (+PR #1 to parent)`);
+    console.log(`Model cost:     $${spentUsd().toFixed(2)} / $${CAP_USD.toFixed(2)} client-side cap ($1 limit set at OpenRouter)`);
   } else if (cmd === "ledger") console.log(`Spent: $${spentUsd().toFixed(4)} / $${CAP_USD.toFixed(2)} client-side circuit breaker (all models; rows in ledger.jsonl)`);
-  else console.log("usage: heir run <task> [--save t.json] | heir gates | heir ledger | heir learn <replay.json> <correction.txt> <control.json>... | heir activate <id> | heir upstream <id>");
+  else console.log("usage: heir run <task> [--save t.json] | heir gates | heir replay <t.json> | heir finale [zero-creds.out] | heir ledger | heir learn <replay.json> <correction.txt> <control.json>... | heir activate <id> | heir upstream <id>");
 }

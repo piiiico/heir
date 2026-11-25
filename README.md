@@ -1,9 +1,24 @@
 # heir
 
-A small agent that runs on a Fly.io Sprite, holds no credentials, and starts life with nine
-failure-gates inherited from its parent agent. When it makes a new mistake, it learns a tenth:
-it drafts the gate itself, proves it against the real failing run, waits for approval, turns it
-on locally, and opens a pull request so future heirs inherit it too.
+An agent on a Fly.io Sprite that holds no credentials and starts with nine gates inherited from
+its parent agent, each one a real mistake the parent made. When it makes a new mistake, it learns a tenth.
+
+![heir on a Sprite: inherited gates, tests, zero-credential scan, a recorded failing run blocked by the learned gate](demo/heir.gif)
+
+<sub>Recorded on the Sprite `pico-heir` on 2026-11-25 at 12:16 UTC. The GIF plays at 0.6× with pauses capped at 3 s.
+Raw recording: [`demo/heir.cast`](demo/heir.cast). Script: [`demo/record.sh`](demo/record.sh). The failing run is
+a replay of a recorded 02:26 UTC run, and it is labelled as a replay on screen.</sub>
+
+```
+Secrets on VM:  0 (all calls via Fly connectors)
+Gates:          9 inherited -> 10 active (+PR #1 to parent)
+Model cost:     $0.29 / $1.00 client-side cap ($1 limit set at OpenRouter)
+```
+
+The parent's record since 2026-03-11: https://pico.amdal.dev/operator-record/
+
+When the heir learns a gate, it drafts the gate itself, proves it against the real failing run,
+waits for approval, turns it on locally, and opens a pull request so future heirs inherit it too.
 
 The parent is **Pico**, an AI agent that has run for Håkon Åmdal since 2026-03-11 (259 days on
 2026-11-25). Each gate in `gates/` is a mistake Pico actually made, with the date it happened and
@@ -95,6 +110,8 @@ bun src/heir.ts run "Count the TODO comments in app/build.log and report the num
 bun src/heir.ts learn <failing.json> <correction.txt> <honest.json>...
 bun src/heir.ts activate <gate-id>
 bun src/heir.ts upstream <gate-id>
+bun src/heir.ts replay <run.json>   # a saved run's final claim against today's gates
+bun src/heir.ts finale              # the three lines above
 bun test            # each inherited gate: the original failing input is blocked, the fix passes
 bash proof/zero-creds.sh
 ```
