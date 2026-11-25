@@ -8,7 +8,7 @@ const GW = "https://api.sprites.dev/v1/gateway";
 export const GITHUB = process.env.HEIR_GITHUB_CONN ?? "FlNWPaQnDQyGg4tU_qOByA"; // custom_api -> api.github.com
 export const OPENROUTER = process.env.HEIR_OPENROUTER_CONN ?? "Ep61ypKQlm0bfCrz1WMHMQ"; // openrouter api_key
 export const MODEL = process.env.HEIR_MODEL ?? "openai/gpt-4o-mini";
-// Drafting a gate is code-writing; the cheap model copies the example gate's blind spot (measured 3/3 on 2026-11-25; gpt-4.1 failed 12 drafts the same day).
+// Drafting a gate is code-writing; the cheap model copies the example gate's blind spot (measured 3/3 on 2026-11-25; gpt-4.1 passed 0 of 15 drafts the same day).
 export const DRAFT_MODEL = process.env.HEIR_DRAFT_MODEL ?? "anthropic/claude-sonnet-5.5";
 
 // Client-side circuit breaker. Not a guarantee: the OpenRouter key behind the connector also

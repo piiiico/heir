@@ -1,0 +1,7 @@
+control: dummy planted in a file (/tmp/planted-dummy.env) and in the environment
+  1
+  /tmp/planted-dummy.env
+control found both. Removing it.
+env/process hits: 0
+files with credential shapes: 0
+Secrets on VM: 0

@@ -2,3 +2,4 @@ ledger.jsonl
 node_modules/
 gates/draft/
 approvals/
+gates/local/

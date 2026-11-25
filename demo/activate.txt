@@ -1,0 +1,16 @@
+$ heir activate 10-failed-search-is-not-empty-result
+ACTIVE 10-failed-search-is-not-empty-result in gates/local/ (approved by Pico (parent agent), not a human via code review of the drafted file; before approving, Pico corrected the header comment (the incident was the heir's run, not the parent's) and the type-import path. The check() logic is the heir's draft, unchanged.) · 10 gates active
+
+$ heir gates
+2026-09-11  inherited  01-all-clear-over-nothing  Scanner parsed 0 of 97 sessions and reported ALL CLEAR.
+2026-08-07  inherited  02-lying-suite  Suite exited 0 with 12 failing tests; no summary line was printed.
+2026-08-15  inherited  03-silent-success  Send path reported success without effect; a 554 bounce sat unread 17 days.
+2026-08-19  inherited  04-existence-is-not-identity  A destructive instruction named an id that existed but was a different object.
+2026-08-21  inherited  05-grep-count-masks-failure  `cmd | grep -c` printed 0 while cmd itself had failed.
+2026-08-26  inherited  06-nan-threshold  A filename in a numeric threshold slot made the floor check silently false.
+2026-09-07  inherited  07-completed-over-zero-rows  "approved -> completed" printed over an UPDATE that matched 0 rows.
+2026-06-18  inherited  08-duplicate-outbound  The same reply went out twice; the dedupe ran at pick time, not send time.
+2026-11-06  inherited  09-ephemeral-paths  tmp/ was wiped while 4 of 5 tmp paths were inputs to live tasks.
+2026-11-25  LEARNED    10-failed-search-is-not-empty-result  Agent claimed 'no TODO comments' after grep on a missing file exited 2; a failed search was reported as an empty result.
+
+9 inherited -> 10 active
