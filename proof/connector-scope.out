@@ -1,0 +1,7 @@
+# Output of proof/connector-scope.sh on the Sprite pico-heir (label heir), copied unedited from the recording demo/heir.cast (2026-11-26 10:24 UTC).
+$ bash proof/connector-scope.sh
+2026-11-26T10:24:52Z on pico-heir as sprite
+env vars named like token/key/secret: 0
+GET /repos/piiiico/heir          -> HTTP 200  token attached, "admin": true
+GET /repos/piiiico/agent-errata  -> HTTP 403  "error":"endpoint is not in allowed list"
+GET /user                        -> HTTP 403  "error":"endpoint is not in allowed list"

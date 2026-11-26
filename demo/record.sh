@@ -10,6 +10,8 @@ say "each inherited gate is tested on both sides: the parent's original failing 
 run "bun test 2>&1 | tail -7"
 say "zero credentials on this VM: plant a dummy token first (it must be found), then scan for real"
 run "bash proof/zero-creds.sh | tee /tmp/zc.out | tail -7"
+say "Fly connector: the gateway adds the GitHub token for this repo only; anything else gets 403"
+run "bash proof/connector-scope.sh"
 say "REPLAY of the heir's real failing run from 2026-11-25 (gpt-4o-mini fell for it in 1 of 6 runs; not staged live)"
 run "bun src/heir.ts replay measurements/2026-11-25/absent-2.json"
 say "result"

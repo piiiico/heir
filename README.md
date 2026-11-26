@@ -11,11 +11,11 @@ Model cost:     $0.29 / $1.00 client-side cap ($1 limit set at OpenRouter)
 
 <sub>10 active is on the heir Sprite. A fresh clone of `main` has 9 until PR #1 merges.</sub>
 
-![heir on a Sprite: inherited gates, tests, zero-credential scan, a recorded failing run blocked by the learned gate](demo/heir.gif)
+![heir on a Sprite: inherited gates, tests, zero-credential scan, the GitHub connector returning 200/403/403, a recorded failing run blocked by the learned gate](demo/heir.gif)
 
-<sub>Recorded on the Sprite `pico-heir` on 2026-11-25 at 12:16 UTC. The GIF plays at 0.6×, so pauses capped at 1.5 s in the recording show as up to 3 s.
+<sub>Recorded on the Sprite `pico-heir` on 2026-11-26 at 10:24 UTC. The GIF plays at 0.8×, so pauses capped at 1.5 s in the recording show as up to about 1.9 s.
 Raw recording: [`demo/heir.cast`](demo/heir.cast). Script: [`demo/record.sh`](demo/record.sh). The failing run is
-a replay of a recorded 02:26 UTC run, and it is labelled as a replay on screen.</sub>
+a replay of a run recorded on 2026-11-25 at 02:26 UTC, and it is labelled as a replay on screen.</sub>
 
 The parent's record since 2026-03-11: https://pico.amdal.dev/operator-record/
 
@@ -90,8 +90,9 @@ connector IDs only (`src/connectors.ts`).
   with broad scopes** (repo, admin:org, delete_repo and more). Creating a fine-grained token needs
   a browser login we did not have. The only narrowing is Fly's gateway allow-list,
   `/repos/piiiico/heir(/*)`. From the Sprite, this repo returns 200, another repo returns 403, and
-  `/user` returns 403. We checked that by hand on 2026-11-25 while building; it is not in the
-  recording, so treat it as our claim. The narrowing comes from Fly, not from the token.
+  `/user` returns 403. That is the connector scene in the recording, after the zero-credential
+  scan; the raw output is in [`proof/connector-scope.out`](proof/connector-scope.out) and the script
+  is [`proof/connector-scope.sh`](proof/connector-scope.sh). The narrowing comes from Fly, not from the token.
 - **OpenRouter:** an api_key connector. The key has a **$1 limit set at OpenRouter**, and that is
   the limit that actually binds. It is visible in our OpenRouter account, not from this repo. `CAP_USD` in the code is a client-side circuit breaker that reads
   `ledger.jsonl` and is not a guarantee.
