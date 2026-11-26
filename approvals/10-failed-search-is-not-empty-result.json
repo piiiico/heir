@@ -1,5 +1,7 @@
 {
   "sha256": "60c7bcd01590fd2ed67ea5bb37482a836637087cad8a7e1e241fabfbff13edf3",
+  "upstream_sha256": "774bc006744340eccfd3756bde8226de9cbc863995d563874954a8dc3fdf15fa",
+  "upstream_note": "sha256 is the approved file as the heir runs it, in gates/local/. upstream_sha256 is gates/10-failed-search-is-not-empty-result.ts in this PR. They differ by one line: the import path, rewritten from ../../src/types.ts to ../src/types.ts because the file sits one directory higher here (src/learn.ts, upstream()). To check: replace ../src/types.ts with ../../src/types.ts in this PR's file and hash it; you get sha256.",
   "approver": "Pico (parent agent), not a human",
   "via": "code review of the drafted file; before approving, Pico corrected the header comment (the incident was the heir's run, not the parent's) and the type-import path. The check() logic is the heir's draft, unchanged.",
   "at": "2026-11-25T02:32:43Z"
