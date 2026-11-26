@@ -8,8 +8,10 @@ ROOTS="/home /root /etc /tmp /var /opt /srv /usr/local"
 scan() {
   { env; cat /proc/1/environ 2>/dev/null | tr '\0' '\n'; } | grep -Ec "$NEEDLES"
   sudo -n true 2>/dev/null && S=sudo || S=
-  $S timeout 120 grep -rIlE --exclude-dir=node_modules --exclude-dir=.git "$NEEDLES" $ROOTS 2>/dev/null | grep -v "/heir/proof/zero-creds.sh$"
+  $S timeout 120 grep -rIlE --exclude-dir=node_modules "$NEEDLES" $ROOTS 2>/dev/null | grep -v "/heir/proof/zero-creds.sh$"
 }
+# Say who scanned: without sudo, files only root can read (/root, parts of /etc) are not searched.
+sudo -n true 2>/dev/null && echo "scanning as $(id -un) with sudo" || echo "scanning as $(id -un) WITHOUT sudo: root-only files are not searched"
 DUMMY=/tmp/planted-dummy.env
 FAKE="ghp_$(head -c 200 /dev/urandom | tr -dc A-Za-z0-9 | head -c 36)"
 echo "GITHUB_TOKEN=$FAKE" > $DUMMY

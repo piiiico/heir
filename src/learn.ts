@@ -141,11 +141,15 @@ export async function upstream(id: string, repo = "piiiico/heir") {
   const main = await must("GET", `${R}/git/ref/heads/main`);
   const branch = `heir/${id}-${Date.now().toString(36)}`;
   await must("POST", `${R}/git/refs`, { ref: `refs/heads/${branch}`, sha: main.object.sha });
+  // The PR copy sits one directory higher, so its import path (and therefore its hash) differs from the
+  // approved local file. The approval names both, so a reader can hash the PR file and still check it.
+  const up = readFileSync(src, "utf8").replace(/\.\.\/\.\.\/src\/types\.ts/g, "../src/types.ts");
+  const approval = { ...meta.approval, upstream_sha256: sha(up), upstream_note: "sha256 = the approved file in gates/local/; upstream_sha256 = this PR's copy, whose import path is rewritten from ../../src/types.ts to ../src/types.ts" };
   const files: [string, string][] = [
-    [`gates/${id}.ts`, readFileSync(src, "utf8").replace(/\.\.\/\.\.\/src\/types\.ts/g, "../src/types.ts")],
+    [`gates/${id}.ts`, up],
     [`replays/${basename(meta.replay)}`, readFileSync(meta.replay, "utf8")],
     ...meta.controls.map((p: string): [string, string] => [`replays/${basename(p)}`, readFileSync(p, "utf8")]),
-    [`approvals/${id}.json`, JSON.stringify(meta.approval, null, 2)],
+    [`approvals/${id}.json`, JSON.stringify(approval, null, 2)],
   ];
   for (const [path, text] of files)
     await must("PUT", `${R}/contents/${path}`, { message: `heir: learned gate ${id}`, branch, content: Buffer.from(text).toString("base64") });
@@ -153,7 +157,7 @@ export async function upstream(id: string, repo = "piiiico/heir") {
     `A heir learned this gate while running. It is active in that heir only; heirs started from main inherit it after this merges.`,
     ``, `**Correction:** ${meta.correction}`, ``,
     `**Evidence:** \`replays/${basename(meta.replay)}\` is a real transcript whose final claim passed all inherited gates. The gate blocks it and lets ${meta.controls.map((p: string) => `\`replays/${basename(p)}\``).join(", ")} (honest runs) through.`,
-    ``, `**Local approval:** ${meta.approval.approver} via ${meta.approval.via}, sha256 \`${meta.approval.sha256}\`.`,
+    ``, `**Local approval:** ${meta.approval.approver} via ${meta.approval.via}, sha256 \`${approval.sha256}\` (this PR's copy: \`${approval.upstream_sha256}\`, import path rewritten).`,
     ``, `Opened by heir (AI agent) through a Fly Sprites connector; the heir holds no GitHub token.`,
   ].join("\n");
   const pr = await must("POST", `${R}/pulls`, { title: `Learned gate ${id}`, head: branch, base: "main", body });

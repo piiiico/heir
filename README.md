@@ -3,17 +3,19 @@
 An agent on a Fly.io Sprite that holds no credentials and starts with nine gates inherited from
 its parent agent, each one a real mistake the parent made. When it makes a new mistake, it learns a tenth.
 
-![heir on a Sprite: inherited gates, tests, zero-credential scan, a recorded failing run blocked by the learned gate](demo/heir.gif)
-
-<sub>Recorded on the Sprite `pico-heir` on 2026-11-25 at 12:16 UTC. The GIF plays at 0.6× with pauses capped at 3 s.
-Raw recording: [`demo/heir.cast`](demo/heir.cast). Script: [`demo/record.sh`](demo/record.sh). The failing run is
-a replay of a recorded 02:26 UTC run, and it is labelled as a replay on screen.</sub>
-
 ```
 Secrets on VM:  0 (all calls via Fly connectors)
 Gates:          9 inherited -> 10 active (+PR #1 to parent)
 Model cost:     $0.29 / $1.00 client-side cap ($1 limit set at OpenRouter)
 ```
+
+<sub>10 active is on the heir Sprite. A fresh clone of `main` has 9 until PR #1 merges.</sub>
+
+![heir on a Sprite: inherited gates, tests, zero-credential scan, a recorded failing run blocked by the learned gate](demo/heir.gif)
+
+<sub>Recorded on the Sprite `pico-heir` on 2026-11-25 at 12:16 UTC. The GIF plays at 0.6×, so pauses capped at 1.5 s in the recording show as up to 3 s.
+Raw recording: [`demo/heir.cast`](demo/heir.cast). Script: [`demo/record.sh`](demo/record.sh). The failing run is
+a replay of a recorded 02:26 UTC run, and it is labelled as a replay on screen.</sub>
 
 The parent's record since 2026-03-11: https://pico.amdal.dev/operator-record/
 
@@ -64,7 +66,9 @@ This happened on 2026-11-25. The full output is in [`demo/2026-11-25.md`](demo/2
 5. **GREEN, not active.** The draft sits in `gates/draft/`, with its sha256 printed.
 6. **Approval.** `heir activate` turns a gate on only if `approvals/<id>.json` has the
    exact sha256 of the drafted file. If the file is edited after approval, the approval no longer
-   counts. Then both sides are tested again. **In this run the approver was Pico, the parent
+   counts. Then both sides are tested again. The copy in PR #1 has a different sha256, because
+   `upstream()` rewrites its import path by one directory. The approval file on the PR records
+   both hashes and how to get from one to the other. **In this run the approver was Pico, the parent
    agent, not a human.** Before approving, Pico corrected the draft's header comment and the
    import path. The check logic is the heir's draft, unchanged.
 7. **Local, then upstream.** The gate goes live in `gates/local/` for this heir only.
@@ -86,16 +90,20 @@ connector IDs only (`src/connectors.ts`).
   with broad scopes** (repo, admin:org, delete_repo and more). Creating a fine-grained token needs
   a browser login we did not have. The only narrowing is Fly's gateway allow-list,
   `/repos/piiiico/heir(/*)`. From the Sprite, this repo returns 200, another repo returns 403, and
-  `/user` returns 403. The narrowing comes from Fly, not from the token.
+  `/user` returns 403. We checked that by hand on 2026-11-25 while building; it is not in the
+  recording, so treat it as our claim. The narrowing comes from Fly, not from the token.
 - **OpenRouter:** an api_key connector. The key has a **$1 limit set at OpenRouter**, and that is
-  the limit that actually binds. `CAP_USD` in the code is a client-side circuit breaker that reads
+  the limit that actually binds. It is visible in our OpenRouter account, not from this repo. `CAP_USD` in the code is a client-side circuit breaker that reads
   `ledger.jsonl` and is not a guarantee.
 
 `proof/zero-creds.sh` runs inside the Sprite. It first plants a dummy token in a file and in the
 environment, and it must find both or the result does not count. Then it removes the dummy and
 scans env, `/proc/1/environ`, and `/home /root /etc /tmp /var /opt /srv /usr/local` for
 GitHub, OpenRouter, Anthropic and Fly token formats. Output from 2026-11-25:
-[`proof/zero-creds.out`](proof/zero-creds.out), `Secrets on VM: 0`.
+[`proof/zero-creds.out`](proof/zero-creds.out), `Secrets on VM: 0`. That run came from the
+2026-11-25 version of the script, which did not print which user it ran as (without sudo,
+root-only files go unsearched) and skipped `.git` directories. The script now prints the user
+and sudo status and scans `.git` too; the committed output predates that change.
 
 Why this matters to the parent: on 2026-11-24 Pico found that a full-account API key had sat in
 one of its public repos for eight months, and GitHub's scanner never flagged it. It was rotated
